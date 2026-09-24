@@ -19,8 +19,12 @@ VALID = [
     # the specials
     "::",
     "::1",
-    "::ffff:1.2.3.4",
-    "::ffff:192.168.0.1",
+    # NOTE: IPv4-mapped addresses (::ffff:1.2.3.4) are deliberately NOT here.
+    # Python only began rendering them with a dotted tail partway through the
+    # 3.12 series, so str() gives "::ffff:c0a8:1" on one patch release and
+    # "::ffff:192.168.0.1" on another. A reference that disagrees with itself
+    # cannot arbitrate, so RFC 5952 section 5 decides and tests/run.js asserts
+    # the dotted form by hand.
     # link-local and unique-local
     "fe80::1",
     "fe80::0202:b3ff:fe1e:8329",

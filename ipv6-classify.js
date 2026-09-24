@@ -76,6 +76,18 @@
     var g = Array.isArray(addr) ? addr.slice() : expand(addr);
     if (!g) { return null; }
 
+    /* RFC 5952 section 5: an IPv4-mapped address is written with a dotted
+       tail, as ::ffff:192.0.2.1 rather than ::ffff:c000:201. Python's
+       ipaddress only started doing this partway through the 3.12 series, so
+       it cannot arbitrate this case - the RFC does. */
+    if (g.slice(0, 5).join('') === '0'.repeat(20) && g[5] === 'ffff') {
+      var b = [
+        parseInt(g[6].slice(0, 2), 16), parseInt(g[6].slice(2), 16),
+        parseInt(g[7].slice(0, 2), 16), parseInt(g[7].slice(2), 16)
+      ];
+      return '::ffff:' + b.join('.');
+    }
+
     var short = g.map(function (x) { return x.replace(/^0+(?=.)/, ''); });
 
     var bestStart = -1, bestLen = 0, curStart = -1, curLen = 0;

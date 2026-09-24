@@ -131,6 +131,17 @@ check('IPv4-mapped is not reported as native IPv6', () => {
   assert.strictEqual(ip6.isGlobal('::ffff:1.2.3.4'), false);
 });
 
+// RFC 5952 section 5 writes IPv4-mapped addresses with a dotted tail. Python
+// only started doing this partway through the 3.12 series, so it is asserted
+// here against the RFC rather than against a reference that changed its mind.
+check('IPv4-mapped compresses to the dotted form (RFC 5952 s5)', () => {
+  assert.strictEqual(ip6.compress('::ffff:192.168.0.1'), '::ffff:192.168.0.1');
+  assert.strictEqual(ip6.compress('::ffff:1.2.3.4'), '::ffff:1.2.3.4');
+  assert.strictEqual(ip6.compress('::ffff:c0a8:1'), '::ffff:192.168.0.1');
+  assert.strictEqual(ip6.expand('::ffff:192.168.0.1').join(':'),
+                     '0000:0000:0000:0000:0000:ffff:c0a8:0001');
+});
+
 check('the unspecified address is distinguished from loopback', () => {
   assert.strictEqual(ip6.classify('::').type, 'unspecified');
   assert.strictEqual(ip6.classify('::1').type, 'loopback');

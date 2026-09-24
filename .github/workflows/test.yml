@@ -17,12 +17,27 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: node tests/run.js
 
-  vectors-match-python:
+  # Regenerate the vectors with whatever Python this runner has, then run the
+  # suite against those. Byte-comparing a committed file instead pins the repo
+  # to one Python patch release: ipaddress changed both its is_private rules
+  # and its IPv4-mapped rendering inside the 3.12 series, and CI failed on
+  # vectors that were correct when generated.
+  agrees-with-python:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.10', '3.12', '3.13']
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      - name: Regenerate vectors with ipaddress and compare to the committed file
-        run: python tests/generate-vectors.py --check
+          python-version: ${{ matrix.python }}
+      - name: Regenerate vectors and check the library still agrees
+        run: |
+          python tests/generate-vectors.py
+          node tests/run.js
+      - name: Show any drift from the committed vectors (informational)
+        run: git --no-pager diff --stat -- tests/vectors.json
