@@ -1,0 +1,21 @@
+{
+  "name": "ipv6-classify",
+  "version": "1.0.0",
+  "description": "Expand, compress and classify IPv6 addresses, and recover the MAC address hidden in an EUI-64 interface identifier. Tested against Python's ipaddress.",
+  "main": "ipv6-classify.js",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run.js",
+    "vectors": "python tests/generate-vectors.py"
+  },
+  "keywords": ["ipv6", "eui-64", "mac-address", "privacy", "rfc5952", "network", "classify"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/examineip/ipv6-classify.git"
+  },
+  "homepage": "https://tools.examineip.com/ipv6-test/",
+  "engines": {
+    "node": ">=14"
+  }
+}
