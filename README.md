@@ -85,10 +85,17 @@ away from what Python actually produces.
 Compression is the part that is easy to get subtly wrong, and the vectors cover it: the
 longest zero run wins, the leftmost wins a tie, and a single zero group is never compressed.
 
-One thing worth knowing if you extend the tests: **`ipaddress.is_global` is registry-based.**
-It means "not in a special-purpose registry", so it is `True` for multicast `ff02::1` and for
-unassigned space like `1:0:0:2::3`. It is not a synonym for global unicast, and treating it as
-one produces confident nonsense.
+Two things worth knowing if you extend the tests.
+
+**`ipaddress.is_global` is registry-based.** It means "not in a special-purpose registry", so
+it is `True` for multicast `ff02::1` and for unassigned space like `1:0:0:2::3`. It is not a
+synonym for global unicast, and treating it as one produces confident nonsense.
+
+**The vectors deliberately record only `exploded` and `compressed`.** `is_private` and
+`is_global` changed definition *within* the 3.12 series, in the CVE-2024-4032 fix — vectors
+generated on 3.12.10 fail the `--check` job on 3.12.14. Expansion and RFC 5952 compression are
+pure formatting and do not drift, so they are the part worth pinning. Address categories are
+asserted by hand in `tests/run.js` instead.
 
 ## Live version
 

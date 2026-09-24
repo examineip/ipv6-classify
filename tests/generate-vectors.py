@@ -72,15 +72,15 @@ def build():
     valid = []
     for a in VALID:
         ip = ipaddress.IPv6Address(a)
+        # ONLY the stable facts. The is_private / is_global properties are
+        # deliberately not recorded: their definitions changed within the 3.12
+        # series (the CVE-2024-4032 fix), so committing them pins the vectors
+        # to one patch release and CI fails on another. Expansion and RFC 5952
+        # compression are pure formatting and do not drift.
         valid.append({
             "input": a,
             "exploded": ip.exploded,          # "0000:0000:...:0001"
             "compressed": str(ip),            # RFC 5952 canonical form
-            "is_global": bool(ip.is_global),
-            "is_loopback": bool(ip.is_loopback),
-            "is_link_local": bool(ip.is_link_local),
-            "is_private": bool(ip.is_private),
-            "is_multicast": bool(ip.is_multicast),
         })
 
     invalid = []

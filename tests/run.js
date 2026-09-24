@@ -70,44 +70,41 @@ for (const bad of V.invalid) {
 }
 
 // ---------------------------------------------------------------------------
-// 4. classify() against the flags ipaddress does expose
+// 4. classify()
+//
+// Asserted by hand rather than from the vectors. ipaddress's is_private and
+// is_global changed definition within the 3.12 series (the CVE-2024-4032
+// fix), so recording them makes the suite pass on one patch release and fail
+// on another. These categories are unambiguous and do not need a reference.
 // ---------------------------------------------------------------------------
-for (const v of V.valid) {
-  const c = ip6.classify(v.input);
+const TYPES = [
+  ['::',                                    'unspecified'],
+  ['::1',                                   'loopback'],
+  ['fe80::1',                               'link-local'],
+  ['fe80::0202:b3ff:fe1e:8329',             'link-local'],
+  ['fc00::1',                               'unique local'],
+  ['fd12:3456:789a:1::1',                   'unique local'],
+  ['ff02::1',                               'multicast'],
+  ['ff05::1:3',                             'multicast'],
+  ['2606:4700:4700::1111',                  'global unicast'],
+  ['2001:4860:4860::8888',                  'global unicast'],
+  ['2a00:1450:4001:80e::200e',              'global unicast'],
+  ['2400:cb00:2048:1::c629:d7a2',           'global unicast'],
+  ['2002:c000:204::',                       '6to4 tunnel'],
+  ['2001:0:4136:e378:8000:63bf:3fff:fdd2',  'Teredo tunnel'],
+  ['2001:db8::1',                           'documentation'],
+  ['::ffff:1.2.3.4',                        'IPv4-mapped']
+];
 
-  if (v.is_loopback) {
-    check(`${v.input} is loopback`, () => assert.strictEqual(c.type, 'loopback'));
-  }
-  if (v.is_link_local) {
-    check(`${v.input} is link-local`, () => assert.strictEqual(c.type, 'link-local'));
-  }
-  if (v.is_multicast) {
-    check(`${v.input} is multicast`, () => assert.strictEqual(c.type, 'multicast'));
-  }
-  // NOTE: ipaddress.is_global is registry-based - it means "not in a
-  // special-purpose registry", so it is True for multicast (ff02::1) and for
-  // unassigned space (1:0:0:2::3). It is NOT a synonym for global unicast, so
-  // it is only used here in the direction that does hold.
-  if (v.is_private) {
-    check(`${v.input} is private, so never global unicast`, () => {
-      assert.notStrictEqual(c.type, 'global unicast');
-    });
-  }
-}
-
-// Addresses that really are global unicast, asserted by hand.
-for (const addr of ['2606:4700:4700::1111', '2001:4860:4860::8888',
-                    '2a00:1450:4001:80e::200e', '2400:cb00:2048:1::c629:d7a2']) {
-  check(`${addr} is global unicast`, () => {
-    assert.strictEqual(ip6.classify(addr).type, 'global unicast');
-    assert.strictEqual(ip6.isGlobal(addr), true);
+for (const [addr, want] of TYPES) {
+  check(`classify ${addr} -> ${want}`, () => {
+    assert.strictEqual(ip6.classify(addr).type, want);
   });
 }
 
-for (const addr of ['::1', '::', 'fe80::1', 'fd12:3456:789a:1::1', 'ff02::1',
-                    '::ffff:1.2.3.4', '2001:db8::1']) {
-  check(`${addr} is not global unicast`, () => {
-    assert.strictEqual(ip6.isGlobal(addr), false);
+for (const [addr, want] of TYPES) {
+  check(`isGlobal ${addr}`, () => {
+    assert.strictEqual(ip6.isGlobal(addr), want === 'global unicast');
   });
 }
 
