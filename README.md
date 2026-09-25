@@ -73,7 +73,7 @@ when the real question is "does this host have working native IPv6?".
 ## Tests
 
 ```
-node tests/run.js                      # 116 checks
+node tests/run.js                      # 113 checks
 python tests/generate-vectors.py       # regenerate the reference vectors
 ```
 
